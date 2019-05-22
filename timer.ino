@@ -64,8 +64,18 @@ void setup() {
   sevseg.setBrightness(90);
 
   pinMode(buzzerPin,OUTPUT);
-  runBuzzer(250);
 
+  // verify hardware
+  runBuzzer(250);
+  sevseg.blank();
+  sevseg.setNumber(8888);
+  for (int i = 0; i < 1000; i++) {
+    sevseg.refreshDisplay();
+    delay(1);
+  }
+  sevseg.blank();
+  delay(100);
+    
   //Serial.begin(115200); // CANNOT be used along with anything on pins 0 or 1 or they conflict.
   resetTimer(initialTimerSeconds);
 }
