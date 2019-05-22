@@ -2,10 +2,39 @@
 
 SevSeg sevseg;
 
+// buzzer
+int buzzerPin = 0;
+
+// joystick
+const int X_pin = 0; // analog pin connected to X output
+const int Y_pin = 1; // analog pin connected to Y output
+
+const int x_center = 495;
+const int y_center = 495;
+const int joystick_dead_zone = 100;
+
+enum run_modes { 
+  setting_timer       = 1, 
+  running_timer       = 2, 
+  running_stopwatch   = 3
+};
+enum run_modes current_mode = running_timer;
+long initialTimerSeconds = 5; // 20 * 60;
+
+// manage "no change" exit 
+long setting_mode_timeout = 1;
+long setting_mode_last_used_at_millis = 0;
+
+// manage "repeat" of held-down time change
+long setting_delta_timeout_ms = 500;
+long setting_delta_last_used_at_millis = 0;
+
+// scratch for debugging
+char line[50];
+
 long countdownSeconds;
 long wantCountdownSeconds;
 long t0;
-long initialTimerSeconds = 20 * 60;
 
 void setup() {
   // This is the 4 Digit 7-Segment Display that comes with Lewis' arduino kit:
@@ -33,35 +62,13 @@ void setup() {
     disableDecPoint
   );
   sevseg.setBrightness(90);
-  Serial.begin(115200);
+
+  pinMode(buzzerPin,OUTPUT);
+  runBuzzer(250);
+
+  //Serial.begin(115200); // CANNOT be used along with anything on pins 0 or 1 or they conflict.
   resetTimer(initialTimerSeconds);
 }
-
-// joystick
-const int X_pin = 0; // analog pin connected to X output
-const int Y_pin = 1; // analog pin connected to Y output
-
-const int x_center = 495;
-const int y_center = 495;
-const int joystick_dead_zone = 100;
-
-enum run_modes { 
-  setting_timer       = 1, 
-  running_timer       = 2, 
-  running_stopwatch   = 3
-};
-enum run_modes current_mode = running_timer;
-
-// manage "no change" exit 
-long setting_mode_timeout = 1;
-long setting_mode_last_used_at_millis = 0;
-
-// manage "repeat" of held-down time change
-long setting_delta_timeout_ms = 500;
-long setting_delta_last_used_at_millis = 0;
-
-// scratch for debugging
-char line[50];
 
 void resetTimer(int t) {
   sprintf(line, "Reset to %d", t);
@@ -174,6 +181,11 @@ void loop() {
     case running_timer:
       secondsElapsed = (millis() - t0) / 1000;
       secondsLeft = countdownSeconds - secondsElapsed;
+     
+      if (secondsLeft == 0) {
+        runBuzzer(2000);
+      }
+      
       minutes = secondsLeft / 60;
       seconds = secondsLeft % 60;
       
@@ -192,4 +204,14 @@ void loop() {
       sevseg.refreshDisplay();
       break;
   }
+}
+
+void runBuzzer(int playForMillis) {
+  long t0 = millis();
+  while (millis() - t0 < playForMillis) {
+      digitalWrite(buzzerPin,HIGH);
+      delay(1);//wait for 1ms
+      digitalWrite(buzzerPin,LOW);
+      delay(1);//wait for 1ms
+    }
 }
