@@ -2,6 +2,20 @@
 
 SevSeg sevseg;
 
+/**
+ * Documentation
+ * 
+ * 1. Joystick: 
+ * - X,Y to analog X_Pin, Y_Pin
+ * - GND -> to any ground
+ * - +5V -> to a +5V source pin
+ * 2. Buzzer
+ * - + to digital buzzerPin
+ * - - to any GND
+ * 3. 4-digit, 7-segment display, see setup() below
+ * - 220 ohm resistors on digit pins (should be 4 of them)
+ */
+
 // buzzer
 int buzzerPin = 0;
 
